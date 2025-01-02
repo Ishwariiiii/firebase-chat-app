@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { auth, db } from "../firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import {
@@ -12,6 +12,7 @@ import Message from "./Message";
 const ChatBox = () => {
   const [message, setMessage] = useState("");
   const [messagesData, setMessagesData] = useState([])
+  const scroll = useRef();
 
 
   useEffect(() => {
@@ -48,6 +49,7 @@ const ChatBox = () => {
       uid,
     });
     setMessage("");
+    scroll.current.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -56,20 +58,30 @@ const ChatBox = () => {
       {messagesData?.map((data) => (
         <Message key={message.id} message={data} />
       ))}
+      <span ref={scroll}></span>
 
       <label htmlFor="messageInput" hidden>
         Enter Message
       </label>
-      <input
-        id="messageInput"
-        name="messageInput"
-        type="text"
-        className="form-input__input"
-        placeholder="type message..."
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-      />
-      <button onClick={sendMessage}>Send</button>
+
+      <div className="flex items-center space-x-4 ml-80">
+        <input
+          id="messageInput"
+          name="messageInput"
+          type="text"
+          className="h-12 w-80 p-3 rounded-md bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Type your message..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <button
+          onClick={sendMessage}
+          className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          Send
+        </button>
+      </div>
+
 
     </div>
   );
