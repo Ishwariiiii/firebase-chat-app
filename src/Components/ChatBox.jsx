@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect} from "react";
 import { auth, db } from "../firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import {
@@ -12,7 +12,7 @@ import Message from "./Message";
 const ChatBox = () => {
   const [message, setMessage] = useState("");
   const [messagesData, setMessagesData] = useState([])
-  const scroll = useRef();
+
 
   useEffect(() => {
     const q = query(
