@@ -1,26 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import { auth, db } from "../firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import {
-  query,
-  orderBy,
-  onSnapshot,
-  limit,
-} from "firebase/firestore";
+import { query, orderBy, onSnapshot, limit } from "firebase/firestore";
 import Message from "./Message";
 
 const ChatBox = () => {
   const [message, setMessage] = useState("");
-  const [messagesData, setMessagesData] = useState([])
+  const [messageData, setMessageData] = useState([]);
   const scroll = useRef();
-
 
   useEffect(() => {
     const q = query(
-      collection(db, "messages"),
+      collection(db, "messageData"),
       orderBy("createdAt", "desc"),
       limit(50)
     );
+
     const unsubscribe = onSnapshot(q, (QuerySnapshot) => {
       const fetchedMessages = [];
       QuerySnapshot.forEach((doc) => {
@@ -29,19 +24,21 @@ const ChatBox = () => {
       const sortedMessages = fetchedMessages.sort(
         (a, b) => a.createdAt - b.createdAt
       );
-      setMessagesData(sortedMessages);
+      setMessageData(sortedMessages);
     });
-    return () => unsubscribe;
+
+    return () => unsubscribe();
   }, []);
 
-
-  const sendMessage = async () => {
+  const sendMessage = async (event) => {
+    event.preventDefault();
     if (message.trim() === "") {
-      alert("Enter valid message");
+      alert("Enter a valid message");
       return;
     }
+
     const { uid, displayName, photoURL } = auth.currentUser;
-    await addDoc(collection(db, "messages"), {
+    await addDoc(collection(db, "messageData"), {
       text: message,
       name: displayName,
       avatar: photoURL,
@@ -49,41 +46,38 @@ const ChatBox = () => {
       uid,
     });
     setMessage("");
+
     scroll.current.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
     <div>
+      <div className="messages-container">
+        {messageData.map((message) => (
+          <Message key={message.id} message={message} />
+        ))}
+      </div>
 
-      {messagesData?.map((data) => (
-        <Message key={message.id} message={data} />
-      ))}
-      <span ref={scroll}></span>
+      <form className="send-message" >
+        <span ref={scroll}></span>
 
-      <label htmlFor="messageInput" hidden>
-        Enter Message
-      </label>
+        <label htmlFor="messageInput" hidden>
+          Enter Message
+        </label>
 
-      <div className="flex items-center space-x-4 ml-80">
         <input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
           id="messageInput"
           name="messageInput"
           type="text"
-          className="h-12 w-80 p-3 rounded-md bg-gray-200 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Type your message..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          className="form-input__input"
+          placeholder="Type a message..."
         />
-        <button
-          onClick={sendMessage}
-          className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          Send
-        </button>
-      </div>
-
-
+        <button onClick={sendMessage}>Send</button>
+      </form>
     </div>
   );
 };
+
 export default ChatBox;
