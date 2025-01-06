@@ -7,7 +7,8 @@ const Message = ({ message }) => {
   console.log(message,"message")
 
   return (
-    <div className={`${message.uid === user?.uid ? "right" : ""}`}>
+    <div className={`w-[100vw] flex items-center mt-3 ${message.uid === user?.uid ? "justify-end" : ""}`}>
+    <div className={` w-[25%] flex items-center gap-2`}>
       <img
         src={message?.avatar}
         alt="user avatar"
@@ -16,6 +17,7 @@ const Message = ({ message }) => {
         <p>{message.name}</p>
         <p >{message.text}</p>
       </div>
+    </div>
     </div>
   );
 };

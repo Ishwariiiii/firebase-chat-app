@@ -3,11 +3,13 @@ import { auth, db } from "../firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { query, orderBy, onSnapshot, limit } from "firebase/firestore";
 import Message from "./Message";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 const ChatBox = () => {
   const [message, setMessage] = useState("");
   const [messageData, setMessageData] = useState([]);
   const scroll = useRef();
+  const [user] = useAuthState(auth);
 
   useEffect(() => {
     const q = query(
@@ -52,7 +54,7 @@ const ChatBox = () => {
 
   return (
     <div>
-      <div className="messages-container">
+      <div className="">
         {messageData.map((message) => (
           <Message key={message.id} message={message} />
         ))}
