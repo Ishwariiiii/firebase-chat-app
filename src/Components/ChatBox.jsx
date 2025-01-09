@@ -85,7 +85,7 @@ const ChatBox = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="overflow-y-auto flex-grow pb-4">
+      <div className="overflow-y-auto flex-grow pb-4 px-5  h-[77vh]">
         {messageData.map((message) => (
           <Message
             key={message.id}

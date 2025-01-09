@@ -1,13 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { auth } from "../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { BiDotsVertical } from "react-icons/bi";
+import { Menu, MenuItem } from "@mui/material";
 
 const Message = ({ message, onDelete, onEdit }) => {
   const [user] = useAuthState(auth);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null); // To detect clicks outside the dropdown
+  const buttonRef = useRef(null); // To track the button click
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const toggleMenu = () => {
+    setIsMenuOpen((prev) => !prev);
+  };
 
   const handleDelete = () => {
     onDelete(message.id);
@@ -19,16 +24,30 @@ const Message = ({ message, onDelete, onEdit }) => {
     setIsMenuOpen(false);
   };
 
+  // Close the menu if the user clicks outside of the menu or the button
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        menuRef.current && !menuRef.current.contains(event.target) &&
+        buttonRef.current && !buttonRef.current.contains(event.target)
+      ) {
+        setIsMenuOpen(false); // Close the dropdown
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+
   return (
     <div
       className={`w-full flex items-start mt-3 ${message.uid === user?.uid ? "justify-end" : ""}`}
     >
       <div
-        className={`relative max-w-[70%] flex items-start gap-3 p-3 rounded-lg mr-4 ${
-          message.uid === user?.uid
-            ? "bg-gray-800 text-white ml-auto"
-            : "bg-gray-600 text-white"
-        }`}
+        className={`relative max-w-[70%] flex items-start gap-3 py-3 rounded-lg ${message.uid === user?.uid ? "bg-gray-800 text-white ml-auto pr-2 pl-7" : "bg-gray-600 pr-7 pl-2  text-white"}`}
       >
         <img
           src={message?.avatar}
@@ -42,28 +61,59 @@ const Message = ({ message, onDelete, onEdit }) => {
             {message.text}
           </p>
         </div>
-
-        <BiDotsVertical
-          className="text-white cursor-pointer ml-auto sm:hidden"
-          onClick={toggleMenu}
-        />
-
-        {isMenuOpen && (
-          <div className="absolute flex flex-col bg-gray-700 rounded-lg mt-2 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:mt-3">
+        {message.uid === user?.uid && (
+            <div className="relative inline-block text-left">
+          <div >
             <button
-              className="px-4 py-2 text-white text-sm hover:bg-gray-500"
-              onClick={handleEdit}
+              ref={buttonRef}
+              type="button"
+              onClick={toggleMenu}
+              id="menu-button"
+              aria-expanded={isMenuOpen ? "true" : "false"}
+              aria-haspopup="true"
             >
-              Edit
-            </button>
-            <button
-              className="px-4 py-2 text-white text-sm hover:bg-gray-500"
-              onClick={handleDelete}
-            >
-              Delete
+              <BiDotsVertical
+          className="text-white cursor-pointer ml-auto"
+        /> 
             </button>
           </div>
+
+          {/* Dropdown menu */}
+          {isMenuOpen && (
+            <div
+              ref={menuRef}
+              className="absolute right-0 z-10 mt-2 w-20 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none"
+              role="menu"
+              aria-orientation="vertical"
+              aria-labelledby="menu-button"
+              tabIndex="-1"
+            >
+              <div className="py-1" role="none">
+                <button
+                  onClick={handleEdit}
+                  className="block px-4 py-2 text-sm text-gray-700"
+                  role="menuitem"
+                  tabIndex="-1"
+                  id="menu-item-0"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="block px-4 py-2 text-sm text-gray-700"
+                  role="menuitem"
+                  tabIndex="-1"
+                  id="menu-item-1"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
         )}
+
+        
       </div>
     </div>
   );
