@@ -7,8 +7,8 @@ import Message from "./Message";
 const ChatBox = () => {
   const [message, setMessage] = useState("");
   const [messageData, setMessageData] = useState([]);
-  const [editedMessage, setEditedMessage] = useState(""); // New state for the edited message
-  const [messageBeingEditedId, setMessageBeingEditedId] = useState(null); // Track which message is being edited
+  const [editedMessage, setEditedMessage] = useState("");
+  const [messageBeingEditedId, setMessageBeingEditedId] = useState(null);
   const scroll = useRef();
 
   useEffect(() => {
@@ -32,7 +32,6 @@ const ChatBox = () => {
     return () => unsubscribe();
   }, []);
 
-  
   const sendMessage = async (event) => {
     event.preventDefault();
     if (message.trim() === "") {
@@ -52,7 +51,6 @@ const ChatBox = () => {
     scroll.current.scrollIntoView({ behavior: "smooth" });
   };
 
- 
   const handleDeleteMessage = async (messageId) => {
     try {
       const messageRef = doc(db, "messageData", messageId);
@@ -63,14 +61,12 @@ const ChatBox = () => {
     }
   };
 
-  
   const handleEditMessage = async (messageId) => {
     const messageToEdit = messageData.find((msg) => msg.id === messageId);
     setEditedMessage(messageToEdit.text);
-    setMessageBeingEditedId(messageId); 
+    setMessageBeingEditedId(messageId);
   };
 
- 
   const saveEditedMessage = async (event) => {
     event.preventDefault();
     if (editedMessage.trim() === "") {
@@ -81,32 +77,27 @@ const ChatBox = () => {
     const messageRef = doc(db, "messageData", messageBeingEditedId);
     await updateDoc(messageRef, {
       text: editedMessage,
-      updatedAt: serverTimestamp(), 
+      updatedAt: serverTimestamp(),
     });
-    setEditedMessage(""); 
+    setEditedMessage("");
     setMessageBeingEditedId(null);
   };
 
   return (
-    <div>
-      <div className="">
+    <div className="flex flex-col h-full">
+      <div className="overflow-y-auto flex-grow pb-4">
         {messageData.map((message) => (
           <Message
             key={message.id}
             message={message}
             onDelete={handleDeleteMessage}
-            onEdit={handleEditMessage} 
+            onEdit={handleEditMessage}
           />
         ))}
+        <span ref={scroll}></span>
       </div>
 
-      <form className="send-message">
-        <span ref={scroll}></span>
-
-        <label htmlFor="messageInput" hidden>
-          Enter Message
-        </label>
-
+      <form className="flex items-center p-4 bg-gray-800 border-t border-gray-700 space-x-2 sm:space-x-4">
         <input
           value={messageBeingEditedId ? editedMessage : message}
           onChange={(e) => {
@@ -119,15 +110,21 @@ const ChatBox = () => {
           id="messageInput"
           name="messageInput"
           type="text"
-          className="bg-gray-300 p-3 rounded-full h-[8vh] text-black"
+          className="flex-1 bg-gray-300 px-3 rounded-full h-[6vh] text-black sm:h-10 sm:px-4 sm:text-lg"
           placeholder="Type a message..."
         />
         {messageBeingEditedId ? (
-          <button onClick={saveEditedMessage} className="bg-blue-800 hover:bg-blue-900 h-[8vh] rounded-full ml-2 text-white w-[6%]">
+          <button
+            onClick={saveEditedMessage}
+            className="bg-blue-800 hover:bg-blue-900 h-[6vh] sm:h-10 rounded-full text-white w-[20%] sm:w-[10%] flex items-center justify-center"
+          >
             Save
           </button>
         ) : (
-          <button onClick={sendMessage} className="bg-blue-800 hover:bg-blue-900 h-[8vh] rounded-full ml-2 text-white w-[6%]">
+          <button
+            onClick={sendMessage}
+            className="bg-blue-800 hover:bg-blue-900 h-[6vh] sm:h-10 rounded-full text-white w-[20%] sm:w-[10%] flex items-center justify-center"
+          >
             Send
           </button>
         )}
@@ -135,4 +132,5 @@ const ChatBox = () => {
     </div>
   );
 };
+
 export default ChatBox;
